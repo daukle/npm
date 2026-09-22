@@ -47,6 +47,11 @@ source plugin that is deliberately not a copy of `daukle/path`.
 DAUKLE=/path/to/daukle sh test/run.sh
 ```
 
+`.gitattributes` pins `* -text`, and it is load bearing rather than tidy. daukle writes LF on every
+platform, so a checkout under `core.autocrlf=true` rewrites the fixtures and five of the byte-exact
+cases fail on Windows for a reason that has nothing to do with the plugin. Measured, not assumed:
+removing the file and re-checking out reproduces exactly those five failures.
+
 With no `DAUKLE`, the runner looks for a build under `.daukle/`, which is where CI checks
 `daukle/daukle` out.
 
