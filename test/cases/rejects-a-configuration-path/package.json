@@ -1,0 +1,6 @@
+{
+  "name": "stub-translator",
+  "dependencies": {
+    "@openauthjs/openauth": "^0.4.3"
+  }
+}

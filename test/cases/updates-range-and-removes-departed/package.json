@@ -1,0 +1,16 @@
+{
+  "name": "stub-translator",
+  "dependencies": {
+    "@openauthjs/openauth": "^0.4.3",
+    "@intisy-ai/basekit-ir": "^4.0.0",
+    "@intisy/bayonet": "^1.7.0"
+  },
+  "daukle": {
+    "managed": {
+      "dependencies": [
+        "@intisy-ai/basekit-ir",
+        "@intisy/bayonet"
+      ]
+    }
+  }
+}

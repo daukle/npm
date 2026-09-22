@@ -1,0 +1,2 @@
+kind: generic
+description: The npm language plugin for daukle. It writes resolved module coordinates into a package.json dependency map and keeps a ledger of the entries it owns, so a dependency daukle added is removed again when it leaves the manifest and a dependency it never owned is left alone.

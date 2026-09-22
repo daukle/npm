@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "@intisy-ai/basekit-ir": "^5.0.0"
+  },
+  "devDependencies": {
+    "@intisy/bayonet": "^1.8.0"
+  },
+  "daukle": {
+    "managed": {
+      "devDependencies": [
+        "@intisy/bayonet"
+      ],
+      "dependencies": [
+        "@intisy-ai/basekit-ir"
+      ]
+    }
+  }
+}

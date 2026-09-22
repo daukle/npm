@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@intisy-ai/basekit-ir": "^5.0.0"
+  },
+  "daukle": {
+    "managed": {
+      "devDependencies": [
+        "@intisy-ai/basekit-ir"
+      ]
+    }
+  }
+}

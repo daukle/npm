@@ -1,0 +1,33 @@
+schema = 1
+project = "example/app"
+version = "1.0.0"
+
+[modules]
+
+[sources."forebay/basekit"]
+kind = "fixture"
+path = "./producer"
+
+[plugins]
+fixture = "./plugins/fixture.lua"
+npm = "./plugins/npm.lua"
+
+[[consumers]]
+id = "runtime"
+language = "npm"
+file = "package.json"
+configuration = "dependencies"
+
+  [consumers.dependencies."forebay/basekit"]
+  version = "^5.0.0"
+  modules = ["ir"]
+
+[[consumers]]
+id = "tooling"
+language = "npm"
+file = "package.json"
+configuration = "devDependencies"
+
+  [consumers.dependencies."forebay/basekit"]
+  version = "^5.0.0"
+  modules = ["loader"]

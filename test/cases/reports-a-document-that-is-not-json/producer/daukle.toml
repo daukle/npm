@@ -1,0 +1,9 @@
+schema = 1
+project = "forebay/basekit"
+version = "5.0.0"
+
+[modules.ir]
+
+  [modules.ir.npm]
+  package = "@intisy-ai/basekit-ir"
+  range = "^5.0.0"
