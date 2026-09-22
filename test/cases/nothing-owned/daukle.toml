@@ -10,7 +10,7 @@ path = "./producer"
 
 [plugins]
 fixture = "./plugins/fixture.lua"
-npm = "./plugins/npm.lua"
+plugin = "./plugins/plugin.lua"
 
 [[consumers]]
 id = "node"

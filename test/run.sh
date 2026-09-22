@@ -41,7 +41,7 @@ run_case() {
     mkdir -p "$(dirname "$sandbox")"
     cp -R "$case_dir" "$sandbox"
     rm -rf "$sandbox/expected" "$sandbox/expect-error.txt"
-    cp "$root/plugin.lua" "$sandbox/plugins/npm.lua"
+    cp "$root/plugin.lua" "$sandbox/plugins/plugin.lua"
 
     if [ -f "$case_dir/expect-error.txt" ]; then
       if (cd "$sandbox" && "$daukle" sync "$manifest_name" >stdout.txt 2>stderr.txt); then
