@@ -1,0 +1,30 @@
+schema = 1
+project = "daukle/example-dependency-ledger"
+version = "1.0.0"
+
+[modules]
+
+# Where the producer's manifest comes from. daukle/path reads
+# <path>/daukle.toml, which is the shape to use while a producer publishes no
+# release asset of its own; daukle/github reads one from a release.
+[sources."example/greeter"]
+kind = "path"
+path = "./producer"
+
+[resolvers.github]
+url = "https://raw.githubusercontent.com/daukle/daukle/1f515141e06d16eace718a45944a39933611fa39/plugins/github-releases.lua"
+sha256 = "3789865c266eb53fafcf7300d77a24461170c615195d92d0ddf88078c556e23e"
+
+[plugins]
+path = { resolver = "github", coordinate = "daukle/path@^1.0.0" }
+npm = { resolver = "github", coordinate = "daukle/npm@^1.0.0" }
+
+[[consumers]]
+id = "node"
+language = "npm"
+file = "package.json"
+configuration = "dependencies"
+
+  [consumers.dependencies."example/greeter"]
+  version = "^2.0.0"
+  modules = ["cli"]
