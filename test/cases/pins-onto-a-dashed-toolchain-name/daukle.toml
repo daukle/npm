@@ -1,0 +1,13 @@
+schema = 1
+project = "daukle/npm-test"
+version = "1.0.0"
+
+[modules]
+
+[plugins]
+npm = "./plugins"
+
+[toolchains.npm]
+version = "22.15.0"
+for = "node-web"
+packages = { is-number = "7.0.0" }

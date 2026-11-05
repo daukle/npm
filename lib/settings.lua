@@ -34,7 +34,7 @@ end
 
 local function target_of(config)
   local target = config["for"] or "node"
-  if type(target) ~= "string" or string.match(target, "^[%w_]+$") == nil then
+  if type(target) ~= "string" or string.match(target, "^[%w_][%w_%-]*$") == nil then
     error('"for" names the toolchain the pins land on, such as "node", not "'
           .. tostring(target) .. '"', 0)
   end
