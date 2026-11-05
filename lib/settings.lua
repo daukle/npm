@@ -80,10 +80,9 @@ local function checked_packages(config, key)
   return names, packages
 end
 
---- Reads and checks the block. Returns `{ version, target, packages, devPackages }`,
+--- Checks a block. Returns `{ version, target, packages, devPackages, pinnedFrom }`,
 --- each package list as `{ names = sorted, ranges = name -> range }`.
-local function read(context)
-  local config = config_of(context)
+local function spec_of(config, version)
   reject_unknown_keys(config)
   local names, ranges = checked_packages(config, "packages")
   local dev_names, dev_ranges = checked_packages(config, "devPackages")
@@ -94,12 +93,17 @@ local function read(context)
     end
   end
   return {
-    version = version_of(context),
+    version = version,
     target = target_of(config),
     packages = { names = names, ranges = ranges },
     devPackages = { names = dev_names, ranges = dev_ranges },
     pinnedFrom = config[output.PINNED_FROM],
   }
+end
+
+--- Reads and checks a task's or generate's own block.
+local function read(context)
+  return spec_of(config_of(context), version_of(context))
 end
 
 local function changed_names(list, pinned, out)
@@ -129,4 +133,4 @@ local function refuse_unpinned(spec, resolving)
   end
 end
 
-return { read = read, refuse_unpinned = refuse_unpinned }
+return { read = read, spec_of = spec_of, refuse_unpinned = refuse_unpinned }
