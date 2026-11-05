@@ -1,0 +1,1 @@
+local target = toolchains and toolchains["web"]
