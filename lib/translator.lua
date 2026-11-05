@@ -2,8 +2,13 @@ local settings = daukle.require("lib/settings")
 local pinning = daukle.require("lib/pinning")
 local output = daukle.require("lib/output")
 
---- The instance a migrated project's npm block is written as.
-local INSTANCE = "npm"
+--- The npm instance written for a node instance: `node` gives `npm`, `node-web` gives `npm-web`,
+--- so two node instances of one project never meet in one npm block.
+local function instance_for(node_instance)
+  local suffix = string.match(node_instance, "^node(%-.+)$")
+  if node_instance == "node" then return "npm" end
+  return "npm" .. (suffix or ("-" .. node_instance))
+end
 
 local SURFACE = "NPM-SURFACE.md: dependencies"
 
@@ -33,8 +38,10 @@ end
 --- migrated project installs exactly the closure the old one did.
 local function translate(foreign)
   local block, lock_text = block_of(foreign)
-  local manifest = { toolchains = { [INSTANCE] = block } }
+  local instance = instance_for(foreign.instance)
   local spec = settings.spec_of(block, block.version)
+  if instance ~= "npm" then block.toolchain = "npm" end
+  local manifest = { toolchains = { [instance] = block } }
   if not foreign.resolving then return unresolved(manifest) end
   if type(lock_text) ~= "string" then
     error("daukle/node's migrator handed over no lockfile, so there is no closure to pin", 0)
@@ -42,8 +49,8 @@ local function translate(foreign)
   return {
     manifest = manifest,
     blockers = {},
-    files = { { path = "daukle/" .. INSTANCE .. "/" .. output.OUTPUT,
-                text = pinning.pin_file(spec, INSTANCE, lock_text) } },
+    files = { { path = "daukle/" .. instance .. "/" .. output.OUTPUT,
+                text = pinning.pin_file(spec, instance, lock_text) } },
   }
 end
 
