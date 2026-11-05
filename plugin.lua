@@ -6,7 +6,7 @@
 --- is to daukle/java. D-229.
 
 daukle.plugin{
-  api = 7,
+  api = 8,
   uses = { "provision", "exec", "write", "pin", "json_parse" },
   --[[ The node release table is daukle/node's and is read rather than copied,
        so both run the same npm. lib/runtimes calls no verb, so the rule that a
@@ -22,8 +22,9 @@ daukle.plugin{
 local runtimes = daukle.require("node:lib/runtimes")
 local settings = daukle.require("lib/settings")
 local manifest = daukle.require("lib/manifest")
-local lockfile = daukle.require("lib/lockfile")
+local pinning = daukle.require("lib/pinning")
 local output = daukle.require("lib/output")
+local translator = daukle.require("lib/translator")
 
 --- Prints a file of the derived directory, since a task reads only project files.
 local PRINT_LOCK = "process.stdout.write(require('fs').readFileSync('package-lock.json', 'utf8'))"
@@ -50,14 +51,6 @@ local function refuse_without_resolve(context)
   end
 end
 
-local function pinned(entries)
-  for index = 1, #entries do
-    local entry = entries[index]
-    entry.sha256 = daukle.pin{ url = entry.url, as = entry.name .. " " .. tostring(entry.version) }.sha256
-  end
-  return entries
-end
-
 daukle.task{
   name = "npm:resolve",
   run = function(context)
@@ -70,9 +63,10 @@ daukle.task{
     daukle.exec(node, { root:path(pick.npm), "install", "--package-lock-only", "--ignore-scripts",
                         "--no-audit", "--no-fund" })
     local lock_text = daukle.exec(node, { "-e", PRINT_LOCK }, { capture = true }).stdout
-    local entries = pinned(lockfile.entries(daukle.json_parse(lock_text)))
     return daukle.write{ path = output.OUTPUT,
-                         text = output.render(spec, context.toolchain.name, lock_text, entries),
+                         text = pinning.pin_file(spec, context.toolchain.name, lock_text),
                          committed = true }
   end,
 }
+
+daukle.translator{ tool = "npm", id = "npm", translate = translator.translate }

@@ -1,4 +1,5 @@
-local LOCK_VERSION = 3
+--- The oldest lockfile with a `packages` map, which npm 7 introduced; version 1 has none.
+local OLDEST_LOCK_VERSION = 2
 
 local function package_name(path)
   local name = string.match(path, "^.*node_modules/(.+)$")
@@ -46,9 +47,10 @@ end
 --- @implNote a bundled package (`inBundle`) has no tarball of its own: it
 --- arrives inside its parent's, so it is skipped rather than pinned.
 local function entries(lock)
-  if lock.lockfileVersion ~= LOCK_VERSION then
-    error("npm wrote lockfile version " .. tostring(lock.lockfileVersion) .. ", and this plugin"
-          .. " reads version " .. LOCK_VERSION .. ", which npm 7 and later write", 0)
+  if type(lock.lockfileVersion) ~= "number" or lock.lockfileVersion < OLDEST_LOCK_VERSION then
+    error("the lockfile is version " .. tostring(lock.lockfileVersion) .. ", which has no"
+          .. " packages map; this plugin reads version " .. OLDEST_LOCK_VERSION .. " and later,"
+          .. " which npm 7 and later write", 0)
   end
   local paths = {}
   for path in pairs(lock.packages or {}) do
