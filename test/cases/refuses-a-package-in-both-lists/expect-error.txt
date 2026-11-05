@@ -1,0 +1,1 @@
+"is-number" is in both "packages" and "devPackages"
