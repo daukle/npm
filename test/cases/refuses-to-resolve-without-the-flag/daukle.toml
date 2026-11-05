@@ -9,4 +9,3 @@ npm = "./plugins"
 
 [toolchains.npm]
 version = "22.15.0"
-packages = { is-number = "7.0.0" }

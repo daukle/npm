@@ -81,13 +81,32 @@ expect_pins() {
       return
     fi
   done < "$case_dir/expect-contains.txt"
-  # The file must also LOAD: a text assertion passes on a file daukle would refuse.
-  if ! (cd "$sandbox" && "$daukle" config print </dev/null >load.txt 2>load-stderr.txt); then
+  # The file must also LOAD and GENERATE: a text assertion passes on a file daukle would refuse.
+  if ! (cd "$sandbox" && "$daukle" sync </dev/null >load.txt 2>load-stderr.txt); then
     cat "$sandbox/load-stderr.txt" >&2
-    fail "$name" "daukle does not load the lock.lua it wrote"
+    fail "$name" "a sync after the resolve fails"
     return
   fi
+  expect_after_an_edit || return 0
   passed=$((passed + 1))
+}
+
+# then.toml replaces daukle.toml after the resolve, and expect-then-error.txt is
+# what the next sync must refuse with: the edit a user makes and forgets to resolve.
+expect_after_an_edit() {
+  [ -f "$case_dir/then.toml" ] || return 0
+  cp "$case_dir/then.toml" "$sandbox/daukle.toml"
+  if (cd "$sandbox" && "$daukle" sync </dev/null >then.txt 2>then-stderr.txt); then
+    fail "$name" "a sync after the edit succeeded, and should have refused"
+    return 1
+  fi
+  clause=$(cat "$case_dir/expect-then-error.txt")
+  if ! grep -qF "$clause" "$sandbox/then-stderr.txt"; then
+    cat "$sandbox/then-stderr.txt" >&2
+    fail "$name" "the refusal after the edit does not carry: $clause"
+    return 1
+  fi
+  return 0
 }
 
 run_case() {

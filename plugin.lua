@@ -31,7 +31,7 @@ local PRINT_LOCK = "process.stdout.write(require('fs').readFileSync('package-loc
 daukle.toolchain{
   name = "npm",
   generate = function(context)
-    settings.read(context)
+    settings.refuse_unpinned(settings.read(context), context.resolving)
     return {}
   end,
 }

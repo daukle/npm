@@ -1,4 +1,9 @@
-local KNOWN_KEYS = { version = true, packages = true, devPackages = true, ["for"] = true }
+local output = daukle.require("lib/output")
+
+local KNOWN_KEYS = { version = true, packages = true, devPackages = true, ["for"] = true,
+                     [output.PINNED_FROM] = true }
+
+local RESOLVE = '"daukle npm:resolve --resolve"'
 
 local SCOPED = "^@[%w][%w%.%_%-]*/[%w][%w%.%_%-]*$"
 local PLAIN = "^[%w][%w%.%_%-]*$"
@@ -93,7 +98,35 @@ local function read(context)
     target = target_of(config),
     packages = { names = names, ranges = ranges },
     devPackages = { names = dev_names, ranges = dev_ranges },
+    pinnedFrom = config[output.PINNED_FROM],
   }
 end
 
-return { read = read }
+local function changed_names(list, pinned, out)
+  for name, range in pairs(list.ranges) do
+    if pinned[name] ~= range then out[#out + 1] = name end
+  end
+  for name in pairs(pinned) do
+    if list.ranges[name] == nil then out[#out + 1] = name end
+  end
+end
+
+--- Refuses a build whose ranges have no pins, or pins resolved from other ranges: an ordinary
+--- build may not resolve a range, and installing the old closure would ignore the edit silently.
+local function refuse_unpinned(spec, resolving)
+  if resolving or (#spec.packages.names == 0 and #spec.devPackages.names == 0) then return end
+  if spec.pinnedFrom == nil then
+    error("these packages have no pins yet, and a build installs only pinned packages: run "
+          .. RESOLVE .. ", which writes daukle/npm/" .. output.OUTPUT, 0)
+  end
+  local changed = {}
+  changed_names(spec.packages, spec.pinnedFrom.packages or {}, changed)
+  changed_names(spec.devPackages, spec.pinnedFrom.devPackages or {}, changed)
+  if #changed > 0 then
+    table.sort(changed)
+    error("the ranges of " .. table.concat(changed, ", ") .. " changed since the pins in daukle/npm/"
+          .. output.OUTPUT .. " were resolved: run " .. RESOLVE .. " again", 0)
+  end
+end
+
+return { read = read, refuse_unpinned = refuse_unpinned }

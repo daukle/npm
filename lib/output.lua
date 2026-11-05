@@ -42,45 +42,38 @@ local function entry_line(entry)
   return "        { " .. table.concat(fields, ", ") .. " },"
 end
 
---- @implNote staleness is a marker, never a raise: core loads this file on every command, so a
---- raise would fail the resolve that rewrites it as well (D-201).
-local LOADER = [[
-    local function same(left, right)
-      for name, range in pairs(left) do if right[name] ~= range then return false end end
-      for name in pairs(right) do if left[name] == nil then return false end end
-      return true
-    end
-    local own = toolchains[%q] or {}
-    if not (same(resolved_from.packages, own.packages or {})
-            and same(resolved_from.devPackages, own.devPackages or {})) then
-      lock.stale = true
-    end
-    target.npmLock = lock
-]]
+--- The key the pin file sets on the npm block: the ranges the pins were resolved from, which
+--- generate compares with the ranges written now.
+local PINNED_FROM = "pinnedFrom"
 
---- The committed pin file: npm's lockfile verbatim, the ranges it was
---- resolved from, and each package's url and sha256, set on the target toolchain.
+--- The committed pin file: npm's lockfile verbatim and each package's url and sha256, set on
+--- the target toolchain, and the ranges they were resolved from, set on the npm block.
+---
+--- @implNote nothing here raises, whatever it finds: core loads this file on every command, so a
+--- raise would fail the resolve that rewrites it as well (D-201). Refusing is generate's.
 local function render(spec, instance, lock_text, entries)
   local lines = {}
   for index = 1, #entries do lines[index] = entry_line(entries[index]) end
   return HEADER .. "\n"
     .. "do\n"
     .. "  local toolchains = daukle.config.toolchains\n"
-    .. string.format("  local target = toolchains and toolchains[%q]\n", spec.target)
-    .. "  if target ~= nil then\n"
-    .. "    local resolved_from = {\n"
+    .. string.format("  local own = toolchains and toolchains[%q]\n", instance)
+    .. "  if own ~= nil then\n"
+    .. "    own." .. PINNED_FROM .. " = {\n"
     .. "      packages = " .. ranges_table(spec.packages) .. ",\n"
     .. "      devPackages = " .. ranges_table(spec.devPackages) .. ",\n"
     .. "    }\n"
-    .. "    local lock = {\n"
+    .. "  end\n"
+    .. string.format("  local target = toolchains and toolchains[%q]\n", spec.target)
+    .. "  if target ~= nil then\n"
+    .. "    target.npmLock = {\n"
     .. "      text = " .. long_string(lock_text) .. ",\n"
     .. "      entries = {\n"
     .. table.concat(lines, "\n") .. (#lines > 0 and "\n" or "")
     .. "      },\n"
     .. "    }\n"
-    .. string.format(LOADER, instance)
     .. "  end\n"
     .. "end\n"
 end
 
-return { OUTPUT = OUTPUT, render = render }
+return { OUTPUT = OUTPUT, PINNED_FROM = PINNED_FROM, render = render }
