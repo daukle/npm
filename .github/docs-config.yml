@@ -1,2 +1,2 @@
 kind: generic
-description: The npm language plugin for daukle. It writes resolved module coordinates into a package.json dependency map and keeps a ledger of the entries it owns, so a dependency daukle added is removed again when it leaves the manifest and a dependency it never owned is left alone.
+description: The future managed resolver for JavaScript, pinning every package of a closure by its registry integrity digest for daukle/node. Being redesigned; nothing on development is released yet.
