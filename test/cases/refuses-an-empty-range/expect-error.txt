@@ -1,0 +1,1 @@
+packages."is-number" is empty, and npm has no empty range

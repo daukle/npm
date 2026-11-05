@@ -1,0 +1,1 @@
+"Not A Name" is not an npm package name
