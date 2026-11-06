@@ -1,0 +1,1 @@
+local target = toolchains and toolchains["node-examples-addon.node"]

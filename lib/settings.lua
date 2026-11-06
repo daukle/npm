@@ -33,9 +33,11 @@ local function version_of(context)
   return version
 end
 
+--- The toolchain instance the pins land on, admitted by core's own instance name rule, since core
+--- names a migrated directory's instance (`node-examples-addon.node`) and this must accept it.
 local function target_of(config)
   local target = config["for"] or "node"
-  if type(target) ~= "string" or string.match(target, "^[%w_][%w_%-]*$") == nil then
+  if type(target) ~= "string" or string.match(target, "^[%l%d][%l%d%._%-]*$") == nil then
     error('"for" names the toolchain the pins land on, such as "node", not "'
           .. tostring(target) .. '"', 0)
   end
