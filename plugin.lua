@@ -25,6 +25,7 @@ local manifest = daukle.require("lib/manifest")
 local pinning = daukle.require("lib/pinning")
 local output = daukle.require("lib/output")
 local translator = daukle.require("lib/translator")
+local npm_config = daukle.require("lib/npm_config")
 
 --- Prints a file of the derived directory, since a task reads only project files.
 local PRINT_LOCK = "process.stdout.write(require('fs').readFileSync('package-lock.json', 'utf8'))"
@@ -61,7 +62,7 @@ daukle.task{
     daukle.write{ path = "package.json", text = manifest.package_json(spec) }
     -- resolving must run none of the closure's code, which a preinstall script would
     daukle.exec(node, { root:path(pick.npm), "install", "--package-lock-only", "--ignore-scripts",
-                        "--no-audit", "--no-fund" })
+                        "--no-audit", "--no-fund" }, { env = npm_config.env(spec.npmConfig) })
     local lock_text = daukle.exec(node, { "-e", PRINT_LOCK }, { capture = true }).stdout
     return daukle.write{ path = output.OUTPUT,
                          text = pinning.pin_file(spec, context.toolchain.name, lock_text),

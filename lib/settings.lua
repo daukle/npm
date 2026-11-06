@@ -1,7 +1,8 @@
 local output = daukle.require("lib/output")
+local npm_config = daukle.require("lib/npm_config")
 
 local KNOWN_KEYS = { version = true, packages = true, devPackages = true, ["for"] = true,
-                     [output.PINNED_FROM] = true }
+                     [output.PINNED_FROM] = true, [npm_config.KEY] = true }
 
 local RESOLVE = '"daukle npm:resolve --resolve"'
 
@@ -98,6 +99,7 @@ local function spec_of(config, version)
     packages = { names = names, ranges = ranges },
     devPackages = { names = dev_names, ranges = dev_ranges },
     pinnedFrom = config[output.PINNED_FROM],
+    npmConfig = npm_config.checked(config),
   }
 end
 
@@ -130,6 +132,12 @@ local function refuse_unpinned(spec, resolving)
     table.sort(changed)
     error("the ranges of " .. table.concat(changed, ", ") .. " changed since the pins in daukle/npm/"
           .. output.OUTPUT .. " were resolved: run " .. RESOLVE .. " again", 0)
+  end
+  local config_changed = npm_config.changed(spec.npmConfig, spec.pinnedFrom.npmConfig)
+  if #config_changed > 0 then
+    error(npm_config.KEY .. " " .. table.concat(config_changed, ", ") .. " changed since the pins in"
+          .. " daukle/npm/" .. output.OUTPUT .. " were resolved, and npm resolves with it: run "
+          .. RESOLVE .. " again", 0)
   end
 end
 
