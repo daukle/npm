@@ -1,0 +1,1 @@
+npmConfig = { ["engine-strict"] = "true" }
