@@ -22,4 +22,9 @@ each as `npm_config_<key>` in its environment, and no `.npmrc` is written. A reg
 those belong in the user's own `~/.npmrc`. Changing a key needs a new resolve, as a range does
 (`D-232`).
 
+`overrides` is npm's own override object as JSON text, `overrides = '{"ms": "2.1.1"}'`, nested
+forms and `$name` references included. Only the resolve reads it, written into the `package.json`
+npm computes the closure from; the lockfile then carries its effect, so `node:install` needs no
+copy. Changing it needs a new resolve, as a range does (`D-246`).
+
 The design is `superpowers/specs/2026-11-05-npm-resolver-design.md` in `daukle/docs` (`D-229`).

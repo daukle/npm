@@ -1,8 +1,10 @@
 local output = daukle.require("lib/output")
 local npm_config = daukle.require("lib/npm_config")
+local overrides = daukle.require("lib/overrides")
 
 local KNOWN_KEYS = { version = true, packages = true, devPackages = true, ["for"] = true,
-                     [output.PINNED_FROM] = true, [npm_config.KEY] = true }
+                     [output.PINNED_FROM] = true, [npm_config.KEY] = true,
+                     [overrides.KEY] = true }
 
 local RESOLVE = '"daukle npm:resolve --resolve"'
 
@@ -102,6 +104,7 @@ local function spec_of(config, version)
     devPackages = { names = dev_names, ranges = dev_ranges },
     pinnedFrom = config[output.PINNED_FROM],
     npmConfig = npm_config.checked(config),
+    overrides = overrides.checked(config),
   }
 end
 
@@ -140,6 +143,10 @@ local function refuse_unpinned(spec, resolving)
     error(npm_config.KEY .. " " .. table.concat(config_changed, ", ") .. " changed since the pins in"
           .. " daukle/npm/" .. output.OUTPUT .. " were resolved, and npm resolves with it: run "
           .. RESOLVE .. " again", 0)
+  end
+  if spec.overrides ~= spec.pinnedFrom.overrides then
+    error(overrides.KEY .. " changed since the pins in daukle/npm/" .. output.OUTPUT .. " were resolved,"
+          .. " and npm resolves with it: run " .. RESOLVE .. " again", 0)
   end
 end
 

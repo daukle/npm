@@ -79,6 +79,7 @@ local function render(spec, instance, lock_text, entries)
     .. "      packages = " .. ranges_table(spec.packages) .. ",\n"
     .. "      devPackages = " .. ranges_table(spec.devPackages) .. ",\n"
     .. "      " .. npm_config.KEY .. " = " .. string_table(spec.npmConfig.values, spec.npmConfig.names) .. ",\n"
+    .. (spec.overrides == nil and "" or ("      overrides = " .. long_string(spec.overrides) .. ",\n"))
     .. "    }\n"
     .. "  end\n"
     .. string.format("  local target = toolchains and toolchains[%q]\n", spec.target)
