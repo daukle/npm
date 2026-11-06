@@ -15,4 +15,11 @@ packages = { react-dom = "^18.3.1" }
 devPackages = { typescript = "~5.6.0" }
 ```
 
+`npmConfig` carries what an `.npmrc` would, as npm config keys to their values:
+`npmConfig = { legacy-peer-deps = "true" }`. Every npm the resolve and `node:install` run gets
+each as `npm_config_<key>` in its environment, and no `.npmrc` is written. A registry, a credential
+(`//...`, `_...`), a `${VAR}` value and a key daukle sets itself (`cache`, `offline`, ...) are refused;
+those belong in the user's own `~/.npmrc`. Changing a key needs a new resolve, as a range does
+(`D-232`).
+
 The design is `superpowers/specs/2026-11-05-npm-resolver-design.md` in `daukle/docs` (`D-229`).
