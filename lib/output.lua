@@ -87,6 +87,7 @@ local function render(spec, instance, lock_text, entries)
     .. "    target.npmLock = {\n"
     .. "      text = " .. long_string(lock_text) .. ",\n"
     .. "      env = " .. string_table(env, sorted_keys(env)) .. ",\n"
+    .. (spec.overrides == nil and "" or ("      overrides = " .. long_string(spec.overrides) .. ",\n"))
     .. "      entries = {\n"
     .. table.concat(lines, "\n") .. (#lines > 0 and "\n" or "")
     .. "      },\n"
