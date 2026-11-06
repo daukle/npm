@@ -8,13 +8,15 @@ local function json_object(list)
   return "{\n" .. table.concat(lines, ",\n") .. "\n  }"
 end
 
---- The package.json npm resolves the closure from: the block's ranges and
+--- The package.json npm resolves the closure from: the block's ranges and overrides and
 --- nothing else, private so npm asks for no name, as daukle/node's is.
 local function package_json(spec)
+  local overrides = spec.overrides == nil and "" or (',\n  "overrides": ' .. spec.overrides)
   return '{\n'
     .. '  "private": true,\n'
     .. '  "dependencies": ' .. json_object(spec.packages) .. ',\n'
-    .. '  "devDependencies": ' .. json_object(spec.devPackages) .. '\n'
+    .. '  "devDependencies": ' .. json_object(spec.devPackages)
+    .. overrides .. '\n'
     .. '}\n'
 end
 
