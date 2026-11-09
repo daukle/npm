@@ -61,6 +61,11 @@ end
 --- generate compares with the ranges written now.
 local PINNED_FROM = "pinnedFrom"
 
+local function meta_line(spec)
+  if spec.peerPackagesMeta == nil then return "" end
+  return "      peerPackagesMeta = " .. long_string(spec.peerPackagesMeta) .. ",\n"
+end
+
 --- The committed pin file: npm's lockfile verbatim and each package's url and sha256, set on
 --- the target toolchain, and the ranges they were resolved from, set on the npm block.
 ---
@@ -78,6 +83,9 @@ local function render(spec, instance, lock_text, entries)
     .. "    own." .. PINNED_FROM .. " = {\n"
     .. "      packages = " .. ranges_table(spec.packages) .. ",\n"
     .. "      devPackages = " .. ranges_table(spec.devPackages) .. ",\n"
+    .. "      peerPackages = " .. ranges_table(spec.peerPackages) .. ",\n"
+    .. "      optionalPackages = " .. ranges_table(spec.optionalPackages) .. ",\n"
+    .. meta_line(spec)
     .. "      " .. npm_config.KEY .. " = " .. string_table(spec.npmConfig.values, spec.npmConfig.names) .. ",\n"
     .. (spec.overrides == nil and "" or ("      overrides = " .. long_string(spec.overrides) .. ",\n"))
     .. "    }\n"
@@ -88,6 +96,7 @@ local function render(spec, instance, lock_text, entries)
     .. "      text = " .. long_string(lock_text) .. ",\n"
     .. "      env = " .. string_table(env, sorted_keys(env)) .. ",\n"
     .. (spec.overrides == nil and "" or ("      overrides = " .. long_string(spec.overrides) .. ",\n"))
+    .. meta_line(spec)
     .. "      entries = {\n"
     .. table.concat(lines, "\n") .. (#lines > 0 and "\n" or "")
     .. "      },\n"
