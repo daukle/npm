@@ -1,0 +1,14 @@
+schema = 1
+project = "daukle/npm-test"
+version = "1.0.0"
+
+[modules]
+
+[plugins]
+npm = "./plugins"
+
+[toolchains.npm]
+version = "22.15.0"
+peerPackages = { is-odd = "^3.0.0" }
+peerPackagesMeta = "{\r\n\"is-odd\": {\"optional\": true}\r\n}"
+overrides = "{\r\n\"is-number\": \"6.0.0\"\r\n}"
