@@ -28,4 +28,11 @@ the closure from, and the pin file hands it to the target toolchain, because an 
 checks each lockfile edge against the `package.json` beside it and asks the registry about an edge
 the overrides changed. Changing it needs a new resolve, as a range does (`D-246`).
 
+`peerPackages` and `optionalPackages` are package name to range, as `packages` is, and
+`peerPackagesMeta` is npm's `peerDependenciesMeta` object as JSON text,
+`peerPackagesMeta = '{"react": {"optional": true}}'`. All three are resolved from, recorded in the
+pins and written into the generated `package.json`, because `npm ci` silently leaves out a peer-only
+or optional package a `package.json` no longer declares, and asks the registry about an optional
+peer it no longer knows is optional. Changing one needs a new resolve (`D-268`).
+
 The design is `superpowers/specs/2026-11-05-npm-resolver-design.md` in `daukle/docs` (`D-229`).
