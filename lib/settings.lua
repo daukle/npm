@@ -1,10 +1,12 @@
 local output = daukle.require("lib/output")
 local npm_config = daukle.require("lib/npm_config")
 local overrides = daukle.require("lib/overrides")
+local object_text = daukle.require("lib/object_text")
 
 local KNOWN_KEYS = { version = true, packages = true, devPackages = true, ["for"] = true,
                      [output.PINNED_FROM] = true, [npm_config.KEY] = true,
-                     [overrides.KEY] = true }
+                     [overrides.KEY] = true, peerPackages = true, optionalPackages = true,
+                     peerPackagesMeta = true }
 
 local RESOLVE = '"daukle npm:resolve --resolve"'
 
@@ -85,6 +87,11 @@ local function checked_packages(config, key)
   return names, packages
 end
 
+local function list_of(config, key)
+  local names, ranges = checked_packages(config, key)
+  return { names = names, ranges = ranges }
+end
+
 --- Checks a block. Returns `{ version, target, packages, devPackages, pinnedFrom }`,
 --- each package list as `{ names = sorted, ranges = name -> range }`.
 local function spec_of(config, version)
@@ -105,6 +112,10 @@ local function spec_of(config, version)
     pinnedFrom = config[output.PINNED_FROM],
     npmConfig = npm_config.checked(config),
     overrides = overrides.checked(config),
+    peerPackages = list_of(config, "peerPackages"),
+    optionalPackages = list_of(config, "optionalPackages"),
+    peerPackagesMeta = object_text.checked(config, "peerPackagesMeta", "npm's peerDependenciesMeta object",
+                                           '{"react": {"optional": true}}'),
   }
 end
 
@@ -122,10 +133,17 @@ local function changed_names(list, pinned, out)
   end
 end
 
+local function declares_nothing(spec)
+  for _, list in ipairs({ spec.packages, spec.devPackages, spec.peerPackages, spec.optionalPackages }) do
+    if #list.names > 0 then return false end
+  end
+  return true
+end
+
 --- Refuses a build whose ranges have no pins, or pins resolved from other ranges: an ordinary
 --- build may not resolve a range, and installing the old closure would ignore the edit silently.
 local function refuse_unpinned(spec, resolving)
-  if resolving or (#spec.packages.names == 0 and #spec.devPackages.names == 0) then return end
+  if resolving or declares_nothing(spec) then return end
   if spec.pinnedFrom == nil then
     error("these packages have no pins yet, and a build installs only pinned packages: run "
           .. RESOLVE .. ", which writes daukle/npm/" .. output.OUTPUT, 0)
@@ -133,6 +151,8 @@ local function refuse_unpinned(spec, resolving)
   local changed = {}
   changed_names(spec.packages, spec.pinnedFrom.packages or {}, changed)
   changed_names(spec.devPackages, spec.pinnedFrom.devPackages or {}, changed)
+  changed_names(spec.peerPackages, spec.pinnedFrom.peerPackages or {}, changed)
+  changed_names(spec.optionalPackages, spec.pinnedFrom.optionalPackages or {}, changed)
   if #changed > 0 then
     table.sort(changed)
     error("the ranges of " .. table.concat(changed, ", ") .. " changed since the pins in daukle/npm/"
@@ -146,6 +166,10 @@ local function refuse_unpinned(spec, resolving)
   end
   if spec.overrides ~= spec.pinnedFrom.overrides then
     error(overrides.KEY .. " changed since the pins in daukle/npm/" .. output.OUTPUT .. " were resolved,"
+          .. " and npm resolves with it: run " .. RESOLVE .. " again", 0)
+  end
+  if spec.peerPackagesMeta ~= spec.pinnedFrom.peerPackagesMeta then
+    error('"peerPackagesMeta" changed since the pins in daukle/npm/' .. output.OUTPUT .. " were resolved,"
           .. " and npm resolves with it: run " .. RESOLVE .. " again", 0)
   end
 end

@@ -8,6 +8,11 @@ local function json_object(list)
   return "{\n" .. table.concat(lines, ",\n") .. "\n  }"
 end
 
+local function optional_list(field, list)
+  if #list.names == 0 then return "" end
+  return ',\n  "' .. field .. '": ' .. json_object(list)
+end
+
 --- The package.json npm resolves the closure from: the block's ranges and overrides and
 --- nothing else, private so npm asks for no name, as daukle/node's is.
 local function package_json(spec)
@@ -16,6 +21,9 @@ local function package_json(spec)
     .. '  "private": true,\n'
     .. '  "dependencies": ' .. json_object(spec.packages) .. ',\n'
     .. '  "devDependencies": ' .. json_object(spec.devPackages)
+    .. optional_list("peerDependencies", spec.peerPackages)
+    .. optional_list("optionalDependencies", spec.optionalPackages)
+    .. (spec.peerPackagesMeta == nil and "" or (',\n  "peerDependenciesMeta": ' .. spec.peerPackagesMeta))
     .. overrides .. '\n'
     .. '}\n'
 end

@@ -17,7 +17,8 @@ local function block_of(foreign)
   local config = foreign.config or {}
   local block = { version = config.version, packages = config.packages,
                   devPackages = config.devPackages, npmConfig = config.npmConfig,
-                  overrides = config.overrides }
+                  overrides = config.overrides, peerPackages = config.peerPackages,
+                  optionalPackages = config.optionalPackages, peerPackagesMeta = config.peerPackagesMeta }
   if foreign.instance ~= "node" then block["for"] = foreign.instance end
   return block, config.lock
 end
