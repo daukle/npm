@@ -16,6 +16,14 @@ local function long_string(text)
   return "[" .. equals .. "[\n" .. text .. "]" .. equals .. "]"
 end
 
+--- A text the build compares with its block, as a quoted string.
+---
+--- @implNote not a long bracket: Lua reads a CRLF inside one as LF, so a value from a CRLF
+--- package.json would never equal the pinned one and every build would call the pins stale.
+local function exact_string(text)
+  return string.format("%q", text)
+end
+
 local function quoted_list(values)
   local quoted = {}
   for index = 1, #values do quoted[index] = string.format("%q", values[index]) end
@@ -63,7 +71,7 @@ local PINNED_FROM = "pinnedFrom"
 
 local function meta_line(spec)
   if spec.peerPackagesMeta == nil then return "" end
-  return "      peerPackagesMeta = " .. long_string(spec.peerPackagesMeta) .. ",\n"
+  return "      peerPackagesMeta = " .. exact_string(spec.peerPackagesMeta) .. ",\n"
 end
 
 --- The committed pin file: npm's lockfile verbatim and each package's url and sha256, set on
@@ -87,7 +95,7 @@ local function render(spec, instance, lock_text, entries)
     .. "      optionalPackages = " .. ranges_table(spec.optionalPackages) .. ",\n"
     .. meta_line(spec)
     .. "      " .. npm_config.KEY .. " = " .. string_table(spec.npmConfig.values, spec.npmConfig.names) .. ",\n"
-    .. (spec.overrides == nil and "" or ("      overrides = " .. long_string(spec.overrides) .. ",\n"))
+    .. (spec.overrides == nil and "" or ("      overrides = " .. exact_string(spec.overrides) .. ",\n"))
     .. "    }\n"
     .. "  end\n"
     .. string.format("  local target = toolchains and toolchains[%q]\n", spec.target)
@@ -95,7 +103,7 @@ local function render(spec, instance, lock_text, entries)
     .. "    target.npmLock = {\n"
     .. "      text = " .. long_string(lock_text) .. ",\n"
     .. "      env = " .. string_table(env, sorted_keys(env)) .. ",\n"
-    .. (spec.overrides == nil and "" or ("      overrides = " .. long_string(spec.overrides) .. ",\n"))
+    .. (spec.overrides == nil and "" or ("      overrides = " .. exact_string(spec.overrides) .. ",\n"))
     .. meta_line(spec)
     .. "      entries = {\n"
     .. table.concat(lines, "\n") .. (#lines > 0 and "\n" or "")
